@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exam Seating Arrangement</title>
+  <script>
+    // Apply saved theme before paint to avoid a flash.
+    try {
+      var t = JSON.parse(localStorage.getItem('examSeating.v1') || '{}').theme;
+      if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) {}
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>if (window.tailwind) tailwind.config = { darkMode: 'class' };</script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
+  <div id="app" class="max-w-6xl mx-auto p-4 space-y-5">
+
+    <!-- Header -->
+    <header class="flex flex-wrap items-center gap-3 justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Exam Seating Arrangement</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Add classes and rooms, pick a rule, generate, adjust, print.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="school" class="inp w-64" placeholder="School / college name" />
+        <button id="themeBtn" class="btn-ghost" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+      </div>
+    </header>
+
+    <!-- Classes -->
+    <section class="card">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="text-lg font-semibold">1. Classes &amp; exams</h2>
+        <div class="flex flex-wrap gap-2">
+          <button id="addClass" class="btn">+ Add class</button>
+          <label class="btn-ghost cursor-pointer">Upload CSV
+            <input id="csvFile" type="file" accept=".csv,text/csv" class="hidden" />
+          </label>
+          <button id="sampleBtn" class="btn-ghost">Load sample data</button>
+        </div>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        Give a roll-number range (prefix optional), and/or upload a CSV with columns <code>roll,name,class</code>.
+        CSV rows are added to the class with the same name (created if missing). Each class can have its own exam, date and time.
+      </p>
+      <div id="classes" class="space-y-3"></div>
+    </section>
+
+    <!-- Rooms -->
+    <section class="card">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <h2 class="text-lg font-semibold">2. Rooms &amp; benches</h2>
+        <button id="addRoom" class="btn">+ Add room</button>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        Enter how many 2-seater and 3-seater benches each room has. A room can have both.
+      </p>
+      <div id="rooms" class="space-y-3"></div>
+    </section>
+
+    <!-- Generate -->
+    <section class="card">
+      <h2 class="text-lg font-semibold mb-3">3. Arrangement rule</h2>
+      <div class="grid gap-2 md:grid-cols-3" id="modes">
+        <label class="mode"><input type="radio" name="mode" value="sequential" />
+          <span><b>Sequential</b><br><small>Fill seats in order of class, then roll number.</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="random" />
+          <span><b>Random shuffle</b><br><small>Everyone shuffled. Click again to re-shuffle.</small></span></label>
+        <label class="mode"><input type="radio" name="mode" value="mixed" />
+          <span><b>Mixed classes</b><br><small>Every student on a bench is from a different class.</small></span></label>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-4">
+        <button id="genBtn" class="btn">Generate seating</button>
+        <button id="clearBtn" class="btn-ghost">Clear arrangement</button>
+        <span id="summary" class="text-sm"></span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+        Locked seats (🔒) stay where they are when you re-generate. Changing a roll range or bench count clears the arrangement.
+      </p>
+    </section>
+
+    <!-- Result -->
+    <section class="card">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="text-lg font-semibold">4. Seating plan</h2>
+        <div class="flex flex-wrap gap-2">
+          <button id="printBtn" class="btn">Print / Save as PDF</button>
+          <button id="csvBtn" class="btn-ghost">Export CSV</button>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <input id="lookup" class="inp max-w-xs" placeholder="Find student by roll no. or name…" />
+        <span id="lookupCount" class="text-xs text-slate-500 dark:text-slate-400"></span>
+      </div>
+      <ul id="lookupOut" class="text-sm mb-3 space-y-1"></ul>
+      <div id="warnings" class="space-y-1 mb-3"></div>
+      <div id="result"></div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-500 dark:text-slate-400 pb-4">
+      Data is saved in this browser only (localStorage).
+    </footer>
+  </div>
+
+  <div id="printArea"></div>
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
