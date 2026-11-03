@@ -62,8 +62,8 @@ function allStudents() {
   S.classes.forEach(c => all.push(...classStudents(c).sort((a, b) => natural(a.roll, b.roll))));
   return all;
 }
-const benchesOf = r => num(r.b2) + num(r.b3);
-const seatsOf = r => num(r.b2) * 2 + num(r.b3) * 3;
+const benchesOf = r => num(r.b1) + num(r.b2) + num(r.b3);
+const seatsOf = r => num(r.b1) + num(r.b2) * 2 + num(r.b3) * 3;
 
 /* ---------- Classes editor ---------- */
 function renderClasses() {
@@ -104,9 +104,10 @@ function renderRooms() {
   }
   box.innerHTML = S.rooms.map(r => `
     <div class="row-box" data-id="${r.id}">
-      <div class="grid gap-2 grid-cols-2 md:grid-cols-6">
+      <div class="grid gap-2 grid-cols-2 md:grid-cols-7">
         <div class="md:col-span-2"><label class="lbl">Room name</label><input class="inp" data-f="name" value="${esc(r.name)}" /></div>
         <div class="md:col-span-2"><label class="lbl">Invigilator</label><input class="inp" data-f="invigilator" value="${esc(r.invigilator)}" placeholder="Optional" /></div>
+        <div><label class="lbl">1-seater benches</label><input type="number" min="0" class="inp" data-f="b1" value="${num(r.b1)}" /></div>
         <div><label class="lbl">2-seater benches</label><input type="number" min="0" class="inp" data-f="b2" value="${num(r.b2)}" /></div>
         <div><label class="lbl">3-seater benches</label><input type="number" min="0" class="inp" data-f="b3" value="${num(r.b3)}" /></div>
       </div>
@@ -133,7 +134,7 @@ function invalidate() {
 
 /* ---------- Event wiring: editors ---------- */
 const INVALIDATING_CLASS = new Set(['prefix', 'from', 'to']);
-const INVALIDATING_ROOM = new Set(['b2', 'b3']);
+const INVALIDATING_ROOM = new Set(['b1', 'b2', 'b3']);
 
 $('#classes').addEventListener('input', e => {
   const f = e.target.dataset.f; if (!f) return;
@@ -171,7 +172,7 @@ $('#addClass').onclick = () => {
   renderClasses(); invalidate();
 };
 $('#addRoom').onclick = () => {
-  S.rooms.push({ id: newId(), name: 'Room ' + (S.rooms.length + 1), invigilator: '', b2: 0, b3: 0 });
+  S.rooms.push({ id: newId(), name: 'Room ' + (S.rooms.length + 1), invigilator: '', b1: 0, b2: 0, b3: 0 });
   renderRooms(); invalidate();
 };
 $('#school').addEventListener('input', e => { S.school = e.target.value; save(); renderPrint(); });
@@ -232,6 +233,7 @@ function generate() {
   const arr = {};
   S.rooms.forEach(r => {
     arr[r.id] = [
+      ...Array.from({ length: num(r.b1) }, () => [null]),
       ...Array.from({ length: num(r.b2) }, () => [null, null]),
       ...Array.from({ length: num(r.b3) }, () => [null, null, null]),
     ];
@@ -496,7 +498,7 @@ $('#sampleBtn').onclick = () => {
     { id: newId(), name: '9-A', prefix: '9A', from: '1', to: '25', exam: 'Science', date: '', time: '10:00 AM – 12:00 PM', extra: [] },
   ];
   S.rooms = [
-    { id: newId(), name: 'Hall 1', invigilator: '', b2: 10, b3: 12 },
+    { id: newId(), name: 'Hall 1', invigilator: '', b1: 4, b2: 8, b3: 12 },
     { id: newId(), name: 'Hall 2', invigilator: '', b2: 8, b3: 6 },
   ];
   initUI(); invalidate();
